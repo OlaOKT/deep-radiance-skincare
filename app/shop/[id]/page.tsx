@@ -1,9 +1,7 @@
-
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { useCart } from "../../cart-context";
 
 const products = [
@@ -57,25 +55,42 @@ const products = [
   },
 ];
 
-export default function ProductDetailsPage() {
-  const params = useParams<{ id: string }>();
+type ProductDetailsPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default function ProductDetailsPage({
+  params,
+}: ProductDetailsPageProps) {
   const { addToCart } = useCart();
 
+  const [productId, setProductId] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const product = products.find(
-    (item) => item.id === Number(params.id)
-  );
+  // Resolve the dynamic product ID on the client.
+  useState(() => {
+    params.then(({ id }) => setProductId(Number(id)));
+  });
 
-  // Show a message if the requested product does not exist.
+  const product =
+    productId === null
+      ? undefined
+      : products.find((item) => item.id === productId);
+
+  if (productId === null) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-lotus-white text-wine-red">
+        <p className="font-sans text-sm">Loading product...</p>
+      </main>
+    );
+  }
+
   if (!product) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-lotus-white px-6 text-center text-wine-red">
         <div>
-          <h1 className="font-serif text-3xl">
-            Product not found
-          </h1>
+          <h1 className="font-serif text-3xl">Product not found</h1>
 
           <p className="mt-4 font-sans text-sm text-wine-red/70">
             We could not find the product you are looking for.
@@ -92,25 +107,22 @@ export default function ProductDetailsPage() {
     );
   }
 
-  // Add the selected quantity to the cart.
   function handleAddToCart() {
-    if (!product) return;
+  if (!product) return;
 
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        category: product.category,
-      });
-    }
-
-    setAddedToCart(true);
+  for (let i = 0; i < quantity; i++) {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      category: product.category,
+    });
   }
+
+  setAddedToCart(true);
+}
 
   return (
     <main className="min-h-screen bg-lotus-white text-wine-red">
-
-      {/* BREADCRUMB */}
       <section className="px-6 pt-8 md:px-12">
         <div className="mx-auto max-w-7xl">
           <Link
@@ -122,11 +134,8 @@ export default function ProductDetailsPage() {
         </div>
       </section>
 
-      {/* PRODUCT DETAILS */}
       <section className="px-6 py-12 md:px-12 md:py-16">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-2 md:gap-16">
-
-          {/* PRODUCT IMAGE */}
           <div className="flex aspect-4/5 items-center justify-center rounded-3xl bg-[#eadedb]">
             <div className="text-center">
               <div className="mx-auto mb-5 flex h-28 w-28 items-center justify-center rounded-full border border-wine-red/20">
@@ -141,9 +150,7 @@ export default function ProductDetailsPage() {
             </div>
           </div>
 
-          {/* PRODUCT INFORMATION */}
           <div className="flex flex-col justify-center">
-
             <p className="font-sans text-xs font-medium uppercase tracking-[0.25em] text-wine-red/60">
               {product.category}
             </p>
@@ -156,7 +163,6 @@ export default function ProductDetailsPage() {
               {product.description}
             </p>
 
-            {/* PRICE */}
             <div className="mt-8 border-y border-wine-red/10 py-6">
               <p className="font-sans text-sm font-medium">
                 Price coming soon
@@ -167,14 +173,12 @@ export default function ProductDetailsPage() {
               </p>
             </div>
 
-            {/* QUANTITY SELECTOR */}
             <div className="mt-8">
               <p className="mb-3 font-sans text-xs font-medium uppercase tracking-wider">
                 Quantity
               </p>
 
               <div className="flex w-fit items-center rounded-full border border-wine-red/20">
-
                 <button
                   type="button"
                   onClick={() => {
@@ -202,11 +206,9 @@ export default function ProductDetailsPage() {
                 >
                   +
                 </button>
-
               </div>
             </div>
 
-            {/* ADD TO CART */}
             <button
               type="button"
               onClick={handleAddToCart}
@@ -231,11 +233,8 @@ export default function ProductDetailsPage() {
               </div>
             )}
 
-            {/* PRODUCT INFORMATION */}
             <div className="mt-10">
-              <h2 className="font-serif text-xl">
-                Product information
-              </h2>
+              <h2 className="font-serif text-xl">Product information</h2>
 
               <ul className="mt-5 space-y-3">
                 {product.details.map((detail) => (
@@ -248,12 +247,10 @@ export default function ProductDetailsPage() {
                 ))}
               </ul>
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* RETURN TO SHOP */}
       <section className="px-6 pb-16 text-center">
         <Link
           href="/shop"
@@ -262,7 +259,6 @@ export default function ProductDetailsPage() {
           Continue browsing
         </Link>
       </section>
-
     </main>
   );
 }
