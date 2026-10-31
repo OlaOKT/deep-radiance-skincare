@@ -44,7 +44,7 @@ export default function Home() {
             }}
           >
             <Image
-              src="/images/logo/PNG/7.png"
+              src="/Images/logo/PNG/7.png"
               alt="Deep Radiance Skincare"
               width={300}
               height={100}
